@@ -22,7 +22,7 @@ def as_get_instances(client, asgroup):
             yield i['InstanceId']
 
 if __name__ == '__main__':
-    client = boto3.client('autoscaling', region_name='ca-central-1')
+    client = boto3.client('autoscaling')
     id_list = list(as_get_instances(client, sys.argv[1]))
     print (id_list)
     for id in id_list:
