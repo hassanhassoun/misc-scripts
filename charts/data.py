@@ -2,14 +2,22 @@ import json
 from datetime import datetime
 from datetime import timedelta
 import os,binascii
+import argparse
 
-START="2019-08-01"
 DATEFORMAT='%Y-%m-%d'
+parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
+parser.add_argument('--days', default=30)
+days = int(parser.parse_args().days)
+startDate = (datetime.now() - timedelta(days=days)).strftime(DATEFORMAT)
+# Adjust start date to first trading day on or b4 startDate
+with open("full/SPY-full.json", 'r') as f:
+    spyTrades = json.load(f)
+    while (spyTrades["Time Series (Daily)"].get(startDate, None) is None):
+        days += 1
+        startDate = (datetime.now() - timedelta(days=days)).strftime(DATEFORMAT)
 
 data = dict()
 initialPrice = dict()
-startDate = (datetime.strptime(START, DATEFORMAT)).strftime(DATEFORMAT)
-days = (datetime.now() - datetime.strptime(START, DATEFORMAT)).days
 symbols = [line.rstrip() for line in open('symbols.txt')]
 with open('header.html') as f: output = f.read()
 for symbol in symbols:
@@ -20,7 +28,7 @@ for symbol in symbols:
 
 output += "      fullDataSet = [\n"
 for days in range(1, days):
-    currentDate = datetime.strptime(START, DATEFORMAT) + timedelta(days=days)
+    currentDate =  datetime.strptime(startDate, DATEFORMAT) + timedelta(days=days)
     dateString = currentDate.strftime(DATEFORMAT)
     out = "[new Date({0}, {1}, {2})".format(currentDate.strftime('%Y'),
         int(currentDate.strftime('%m')) - 1,
